@@ -1,0 +1,5 @@
+resource "aws_key_pair" "andy" {
+  key_name   = "andy_key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0GPnO/utuR4Li/A6WRhebiGeBwcLggJPgtaRfDm6wKFkTuUHBkq5fIxks5WOeElLy6DBQ4ppx8Q1oPFjeydDvnJTHZ10khEM+/lbEPhiwvqoGqdPd1gCYhyH8SEGcvw8wRIo2vBVx++1RC45eqkc8+mOevHgEpYw17ig/wqjOsIQsgUX0DQYdiU3pu3qFI+ydReaQrD7Len08WZurHopEVBf11p5gwljjnOMkdrWAE1Vl27TU3AvZBptLxgFCGOozRsPNdOF0ERET1VWi1i1BUOSYPxqifsuwjxN8PvQfDIbo/8mm+MyxLMYMG5ShUAZHm/TSB2S1iUWTQZms1wpV andyfoston@UKML91LHHV2L"
+}
+

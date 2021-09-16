@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn instance to serve hello-world
+After=network.target
+
+[Service]
+User=hello-world
+Group=hello-world
+WorkingDirectory=/opt/hello-world/
+Environment="PATH=opt/hello-world/env/bin"
+ExecStart=/opt/hello-world/env/bin/gunicorn --workers 3 --bind localhost:8080 app:app
+
+[Install]
+WantedBy=multi-user.target

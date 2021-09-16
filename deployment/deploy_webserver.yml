@@ -1,0 +1,96 @@
+---
+- hosts: all
+  user: ubuntu
+  become: yes
+
+  tasks:
+    - name: "Install packages"
+      apt:
+        name: 
+        - python3
+        - python3-pip
+        - virtualenv
+        - nginx
+        state: "present"
+        update_cache: yes
+
+    - name: "Create flask user"
+      ansible.builtin.user:
+        name: hello-world
+        shell: /bin/nologin
+
+    - name: "Create app directory"
+      file:
+        dest: "{{ item }}"
+        state: directory
+        owner: "hello-world"
+        group: "hello-world"
+        mode: 0755
+      with_items:
+        - /opt/hello-world
+        - /opt/hello-world/env
+
+    - name: "Copy Python files"
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: "hello-world"
+        group: "hello-world"
+        mode: 0644
+      with_items:
+        - src: ../src/requirements.txt
+          dest: /opt/hello-world/requirements.txt
+        - src: ../src/app.py
+          dest: /opt/hello-world/app.py
+      notify:
+        - "Restart gunicorn"
+
+    - name: "Install Python dependencies"
+      pip:
+        requirements: /opt/hello-world/requirements.txt
+        virtualenv: /opt/hello-world/env
+      notify:
+        - "Restart gunicorn"
+
+    - name: "Copy gunicorn service"
+      copy:
+        src: gunicorn.service
+        dest: /etc/systemd/system/gunicorn.service
+      notify:
+        - "Restart gunicorn"
+
+    - name: "Start services"
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      with_items:
+        - gunicorn.service
+        - nginx.service
+
+    - name: "Configure nginx"
+      copy:
+        src: ./www.interview.foston.me.conf
+        dest: /etc/nginx/sites-available/www.interview.foston.me.conf
+      notify:
+        - "Restart nginx"
+
+    - name: "Enable nginx"
+      file:
+        src: /etc/nginx/sites-available/www.interview.foston.me.conf
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+        force: yes
+      notify:
+        - "Restart nginx"
+
+  handlers:
+    - name: "Restart Gunicorn"
+      systemd:
+        name: gunicorn.service
+        state: restarted
+    - name: "Restart nginx"
+      systemd:
+        name: nginx.service
+        state: restarted
+
