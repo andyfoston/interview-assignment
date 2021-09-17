@@ -80,32 +80,6 @@ resource "aws_security_group" "ec2" {
   description = "Allow SSH and HTTP(S) via the load balancer"
   vpc_id      = aws_vpc.main.id
 
-  ingress = [
-    {
-      description      = "HTTP from ELB"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      security_groups  = []
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self             = false
-    },
-    {
-      description      = "SSH"
-      from_port        = 22
-      to_port          = 22
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      security_groups  = []
-      self             = false
-    }
-  ]
-
   egress = [
     {
       description      = "Allow all outbound traffic"
@@ -119,6 +93,26 @@ resource "aws_security_group" "ec2" {
       self             = false
     }
   ]
+}
+
+resource "aws_security_group_rule" "elb_to_ec2" {
+  type                     = "ingress"
+  description              = "HTTP from ELB"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = aws_elb.web.source_security_group_id
+  security_group_id        = aws_security_group.ec2.id
+}
+
+resource "aws_security_group_rule" "ssh" {
+  type              = "ingress"
+  description       = "SSH"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.ec2.id
 }
 
 resource "aws_elb" "web" {
